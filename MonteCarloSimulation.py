@@ -6,12 +6,6 @@ import doctest
 import pytest
 import typing
 
-class Zombie:
-    sensor_human = rd.random() # Random float:  0.0 <= x < 1.0
-
-
-
-
 def encounter(self):
     picked_dict = {}
     for i in self.zombie_UIN:
@@ -32,14 +26,18 @@ def attack(self, picked_dict: dict):
         if fate > 0.8:
             # That poor person was eaten by zombie(s)
             self.survivors_UIN.remove(i)
+            self.survivors_number = self.survivors_number -1
         elif fate > 0.4:
             # That poor person was turned into a new zombie
             self.zombie_UIN.append(i)
             self.survivors_UIN.remove(i)
+            self.survivors_number = self.survivors_number - 1
+            self.zombies_number = self.zombies_number + 1
         elif fate < 0.1:
             # That brave and lucky person escaped and killed a zombie
             dead_zombie = rd.choice(attacker)
             self.zombie_UIN.remove(dead_zombie)
+            self.zombies_number = self.zombies_number - 1
         else:
             # That lucky person escaped
             pass
@@ -49,11 +47,45 @@ def attack(self, picked_dict: dict):
 def sensor_passive(self):
     pass
 
-def defense(self):
-    pass
+def assign_animo(self):
+    animo_dict = {}
+    if self.animo < 1:
+        return animo_dict
+    animo_per_person = round(self.animo/self.survivors_number)
+    animo_std = animo_per_person * 0.5
+    for i in self.survivors_UIN:
+        has_animo = round(rd.normalvariate(animo_per_person,animo_std))
+        animo_dict[i] = has_animo
+    return animo_dict
+
+def defense(self,picked_dict = {}):
+    animo_dict = assign_animo(self)
+    if animo_dict is None:
+        return
+    if self.strategy == 1:
+        for person in animo_dict:
+            ani = animo_dict[person]
+            if ani > 0:
+                for i in range(ani):
+                    if self.zombies_number > 0:
+                        break
+                    shoot_rate = rd.random()
+                    if shoot_rate > 0.3:
+                        self.animo = self.animo - 1
+                        hit_rate = rd.random()
+                        if hit_rate > 0.5:
+                            uin = rd.choice(self.zombie_UIN)
+                            self.zombie_UIN.remove(uin)
+                            self.zombies_number = self.zombies_number-1
+
+
+    if self.strategy == 2:
+        pass
 
 
 def one_day(self):
+    if self.animo>0 and self.strategy > 0:
+        defense(self)
     picked_dict = encounter(self)
     attack(self, picked_dict)
     self.day = self.day +1
@@ -64,8 +96,9 @@ def one_town():
     a: int = 500
     b: int = 50
     c: int = 1000
+    s: int = 1
     #t = Town(a, b)
-    t = Town(a, b, c)
+    t = Town(a, b, c, s)
     while (t.zombies_number * t.survivors_number != 0):
         one_day(t)
     t.end()
@@ -99,10 +132,19 @@ if __name__ == '__main__':
     # Several Town
     winners = []
     days = []
-    for i in range(500):
+    runs = 500
+    for i in range(runs):
         winner, day =one_town()
         winners.append(winner)
         days.append(day)
+    ind = range(1,runs+1)
+
+    win = pd.DataFrame({'index' :range(1,runs+1),'winner' : winners, 'days' :days})
+
+    b = 1 in pd.Series(win['winner'])
+    print(b)
+
+    '''
     #plt.plot(days)
     #plt.ylabel('days')
     days_dict = {}
@@ -119,3 +161,4 @@ if __name__ == '__main__':
         values.append(item[1])
     plt.plot(days,values)
     plt.show()
+    '''
