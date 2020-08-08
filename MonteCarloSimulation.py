@@ -62,7 +62,7 @@ def defense(self,picked_dict = {}):
     animo_dict = assign_animo(self)
     if animo_dict is None:
         return
-    if self.strategy == 1:
+    if self.strategy == 2:
         for person in animo_dict:
             ani = animo_dict[person]
             if ani > 0:
@@ -70,16 +70,17 @@ def defense(self,picked_dict = {}):
                     if self.zombies_number > 0:
                         break
                     shoot_rate = rd.random()
-                    if shoot_rate > 0.3:
+                    if shoot_rate > 0:
                         self.animo = self.animo - 1
-                        hit_rate = rd.random()
+                        #hit_rate = rd.random()
+                        hit_rate = 1
                         if hit_rate > 0.5:
                             uin = rd.choice(self.zombie_UIN)
                             self.zombie_UIN.remove(uin)
                             self.zombies_number = self.zombies_number-1
 
 
-    if self.strategy == 2:
+    if self.strategy == 3:
         pass
 
 
@@ -89,15 +90,11 @@ def one_day(self):
     picked_dict = encounter(self)
     attack(self, picked_dict)
     self.day = self.day +1
+    #print(len(self.zombie_UIN),len(self.survivors_UIN))
     return self
 
-def one_town():
+def one_town(a, b, c, s):
     # One Town Several Days
-    a: int = 500
-    b: int = 50
-    c: int = 1000
-    s: int = 1
-    #t = Town(a, b)
     t = Town(a, b, c, s)
     while (t.zombies_number * t.survivors_number != 0):
         one_day(t)
@@ -105,7 +102,7 @@ def one_town():
     return(t.winner,t.day)
 
 class Town:
-    def __init__(self,a=500,b=50,c=0,s=0):
+    def __init__(self,a=5000,b=10,c=0,s=0):
         self.all_citizens = a
         self.zombies_number = b
         self.survivors_number = a-b
@@ -119,10 +116,10 @@ class Town:
         self.winner = 0
 
     def end(self):
-        if len(self.zombie_UIN) ==0:
-            self.winner = 1 #how to trans it outside ???
+        if len(self.zombie_UIN) <=0:
+            self.winner = 1
             self.close()
-        if len(self.survivors_UIN) == 0:
+        if len(self.survivors_UIN) <= 0:
             self.winner = -1
             self.close()
     def close(self):
@@ -130,20 +127,36 @@ class Town:
 
 if __name__ == '__main__':
     # Several Town
+    a = 5000 # number of citizen
+    b = 50 # number of initial zombie
+    c = 10000 # ammo
+    s = 1 #strategy
+
     winners = []
     days = []
     runs = 500
     for i in range(runs):
-        winner, day =one_town()
+        winner, day = one_town(a, b, c, s)
         winners.append(winner)
         days.append(day)
     ind = range(1,runs+1)
 
-    win = pd.DataFrame({'index' :range(1,runs+1),'winner' : winners, 'days' :days})
 
-    b = 1 in pd.Series(win['winner'])
-    print(b)
+    win = pd.DataFrame({'Index' :range(1,runs+1),'Winner' : winners, 'Days' :days})
 
+    win_compare = win[['Winner','Days']].groupby('Winner').count().reset_index()
+    print(win_compare)
+    win_human = win[win.Winner == 1]
+    ave_human_win_days = win_human['Days'].mean()
+    print(win_human)
+    print(ave_human_win_days)
+    win_zombie = win[win.Winner == -1]
+    ave_zombie_win_days = win_zombie['Days'].mean()
+    print(win_zombie)
+    print(ave_zombie_win_days)
+
+    win_human_days = win_human[['Days']].groupby.count().reset_index()
+    plt.plot()
     '''
     #plt.plot(days)
     #plt.ylabel('days')
