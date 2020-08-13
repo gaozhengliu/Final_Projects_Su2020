@@ -47,31 +47,31 @@ def attack(self, picked_dict: dict):
 def sensor_passive(self):
     pass
 
-def assign_animo(self):
-    animo_dict = {}
-    if self.animo < 1:
-        return animo_dict
-    animo_per_person = round(self.animo/self.survivors_number)
-    animo_std = animo_per_person * 0.5
+def assign_ammo(self):
+    ammo_dict = {}
+    if self.ammo < 1:
+        return ammo_dict
+    ammo_per_person = round(self.ammo/self.survivors_number)
+    ammo_std = ammo_per_person * 0.5
     for i in self.survivors_UIN:
-        has_animo = round(rd.normalvariate(animo_per_person,animo_std))
-        animo_dict[i] = has_animo
-    return animo_dict
+        has_ammo = round(rd.normalvariate(ammo_per_person,ammo_std))
+        ammo_dict[i] = has_ammo
+    return ammo_dict
 
 def defense(self,picked_dict = {}):
-    animo_dict = assign_animo(self)
-    if animo_dict is None:
+    ammo_dict = assign_ammo(self)
+    if ammo_dict is None:
         return
     if self.strategy == 2:
-        for person in animo_dict:
-            ani = animo_dict[person]
+        for person in ammo_dict:
+            ani = ammo_dict[person]
             if ani > 0:
                 for i in range(ani):
                     if self.zombies_number > 0:
                         break
                     shoot_rate = rd.random()
                     if shoot_rate > 0:
-                        self.animo = self.animo - 1
+                        self.ammo = self.ammo - 1
                         #hit_rate = rd.random()
                         hit_rate = 1
                         if hit_rate > 0.5:
@@ -85,7 +85,7 @@ def defense(self,picked_dict = {}):
 
 
 def one_day(self):
-    if self.animo>0 and self.strategy > 0:
+    if self.ammo>0 and self.strategy > 1:
         defense(self)
     picked_dict = encounter(self)
     attack(self, picked_dict)
@@ -102,7 +102,7 @@ def one_town(a, b, c, s):
     return(t.winner,t.day)
 
 class Town:
-    def __init__(self,a=5000,b=10,c=0,s=0):
+    def __init__(self,a=5000,b=10,c=0,s=1):
         self.all_citizens = a
         self.zombies_number = b
         self.survivors_number = a-b
@@ -110,7 +110,7 @@ class Town:
         rd.shuffle(self.all_citizen_UIN)
         self.zombie_UIN = self.all_citizen_UIN[0:b]
         self.survivors_UIN = self.all_citizen_UIN[b:a-1]
-        self.animo = c
+        self.ammo = c
         self.strategy = s
         self.day = 0
         self.winner = 0
@@ -130,7 +130,7 @@ if __name__ == '__main__':
     a = 5000 # number of citizen
     b = 50 # number of initial zombie
     c = 10000 # ammo
-    s = 1 #strategy
+    s = 2 #strategy
 
     winners = []
     days = []
@@ -155,8 +155,8 @@ if __name__ == '__main__':
     print(win_zombie)
     print(ave_zombie_win_days)
 
-    win_human_days = win_human[['Days']].groupby.count().reset_index()
-    plt.plot()
+    win_human_days = win_human[['Days']].groupby('Days').count().reset_index()
+    #plt.plot()
     '''
     #plt.plot(days)
     #plt.ylabel('days')
