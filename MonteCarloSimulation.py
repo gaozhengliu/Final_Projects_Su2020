@@ -64,13 +64,13 @@ def defense(self,picked_dict = {}):
         return
     if self.strategy == 2:
         for person in ammo_dict:
-            ani = ammo_dict[person]
-            if ani > 0:
-                for i in range(ani):
+            ammo = ammo_dict[person]
+            if ammo > 0:
+                for i in range(ammo):
                     if self.zombies_number > 0:
                         break
                     shoot_rate = rd.random()
-                    if shoot_rate > 0:
+                    if shoot_rate > 0.1:
                         self.ammo = self.ammo - 1
                         #hit_rate = rd.random()
                         hit_rate = 1
@@ -81,7 +81,21 @@ def defense(self,picked_dict = {}):
 
 
     if self.strategy == 3:
-        pass
+        for person in picked_dict:
+            ammo = ammo_dict[person]
+            if ammo > 0:
+                for i in range(ammo):
+                    if picked_dict[person] is not None:
+                        shoot_rate = rd.random()
+                        if shoot_rate > 0.1:
+                            self.ammo = self.ammo - 1
+                            hit_rate = rd.random
+                            hit_rate = 1
+                            if hit_rate > 0.5:
+                                uin = rd.choice(picked_dict[person])
+                                self.zombie_UIN.remove(uin)
+                                self.zombies_number = self.zombies_number - 1
+
 
 
 def one_day(self):
